@@ -1,11 +1,11 @@
 {
      "NAME":"Contract Pack: Tourism Expanded",
-     "URL":"https://github.com/phillo3/TourismExpanded/blob/740a241c6087ac9f8cbdda134a7fccd7a4bc04ad/GameData/ContractPacks/TourismExpanded/ContractPack-TourismExpanded.version"
-     "DOWNLOAD":"https://github.com/phillo3/TourismExpanded/releases"
-     "CHANGE_LOG_URL":"https://github.com/phillo3/TourismExpanded/blob/740a241c6087ac9f8cbdda134a7fccd7a4bc04ad/CHANGES.txt"
+     "URL":"https://github.com/phillo3/TourismExpanded/blob/740a241c6087ac9f8cbdda134a7fccd7a4bc04ad/GameData/ContractPacks/TourismExpanded/ContractPack-TourismExpanded.version",
+     "DOWNLOAD":"https://github.com/phillo3/TourismExpanded/releases",
+     "CHANGE_LOG_URL":"https://github.com/phillo3/TourismExpanded/blob/740a241c6087ac9f8cbdda134a7fccd7a4bc04ad/CHANGES.txt",
      "GITHUB":
      {
-         "USERNAME": " phillo3",
+         "USERNAME": "phillo3",
          "REPOSITORY": "TourismExpanded"
      },
      "VERSION":{
