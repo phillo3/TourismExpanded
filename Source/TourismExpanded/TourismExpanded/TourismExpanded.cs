@@ -143,6 +143,8 @@ namespace TourismExpanded
 
         public double TravelTime(CelestialBody origin, CelestialBody dest, double earliestLaunchDate)
         {
+            double timePassed = UnityEngine.Time.realtimeSinceStartup;
+
             double totalTravelTime = 0;
             double launchTime = 0;
 
@@ -161,7 +163,18 @@ namespace TourismExpanded
 
                 double minDeltaV = LambertSolver.TransferDeltaV(origin, dest, launchTime, travelTime, origin.scienceValues.spaceAltitudeThreshold + 10000, dest.scienceValues.spaceAltitudeThreshold + 10000);
 
-                for (double i = travelTime / 2; i < travelTime * 2; i += 60 * 60 * 6)
+                double increment;
+
+                if(originOrbit.semiMajorAxis < destOrbit.semiMajorAxis)
+                {
+                    increment = originOrbit.period / 180;
+                }
+                else
+                {
+                    increment = destOrbit.period / 180;
+                }
+
+                for (double i = travelTime / 2; i < travelTime * 1.5; i += increment)
                 {
                     double thisDeltaV = LambertSolver.TransferDeltaV(origin, dest, launchTime, i, origin.scienceValues.spaceAltitudeThreshold + 10000, dest.scienceValues.spaceAltitudeThreshold + 10000);
 
@@ -171,11 +184,11 @@ namespace TourismExpanded
                     }
                 }
 
-                for (double i = earliestLaunchDate; i < launchTime; i += 60 * 60 * 6 * 2)
+                for (double i = earliestLaunchDate; i < launchTime; i += increment)
                 {
                     double deltaV = minDeltaV * 1.1;
 
-                    for (double j = travelTime / 2; j < travelTime * 2; j += 60 * 60 * 6 * 2)
+                    for (double j = travelTime / 2; j + i < launchTime + totalTravelTime && j < travelTime * 1.5; j += increment)
                     {
                         double thisDeltaV = LambertSolver.TransferDeltaV(origin, dest, i, j, origin.scienceValues.spaceAltitudeThreshold + 10000, dest.scienceValues.spaceAltitudeThreshold + 10000);
 
@@ -227,8 +240,11 @@ namespace TourismExpanded
                 throw new Exception("Cannot find travel time for " + origin.name + " and " + dest.name);
             }
 
+            timePassed = UnityEngine.Time.realtimeSinceStartup - timePassed;
+
             MonoBehaviour.print("The travel time between " + origin.name + " and " + dest.name + " = " + KSPUtil.dateTimeFormatter.PrintTimeStamp(totalTravelTime, days: true, years: true) 
-                + " Launching at : " +  KSPUtil.dateTimeFormatter.PrintTimeStamp(launchTime, days: true, years: true));
+                + "\n Launching at : " +  KSPUtil.dateTimeFormatter.PrintTimeStamp(launchTime, days: true, years: true)
+                + "\n Time to calculate : " + timePassed);
 
             return totalTravelTime + launchTime;
         }
@@ -253,7 +269,18 @@ namespace TourismExpanded
 
                 double minDeltaV = LambertSolver.TransferDeltaV(originOrbit, destOrbit, launchTime, travelTime);
 
-                for (double i = travelTime / 2; i < travelTime * 2; i += 60 * 60 * 6)
+                double increment;
+
+                if (originOrbit.semiMajorAxis < destOrbit.semiMajorAxis)
+                {
+                    increment = originOrbit.period / 180;
+                }
+                else
+                {
+                    increment = destOrbit.period / 180;
+                }
+
+                for (double i = travelTime / 2; i < travelTime * 2; i += increment)
                 {
                     double thisDeltaV = LambertSolver.TransferDeltaV(originOrbit, dest.orbit, launchTime, i);
 
@@ -263,11 +290,11 @@ namespace TourismExpanded
                     }
                 }
 
-                for (double i = earliestLaunchDate; i < launchTime; i += 60 * 60 * 6 * 2)
+                for (double i = earliestLaunchDate; i < launchTime; i += increment)
                 {
                     double deltaV = minDeltaV * 1.1;
 
-                    for (double j = travelTime / 2; j < travelTime * 2; j += 60 * 60 * 6 * 2)
+                    for (double j = travelTime / 2; j < travelTime * 2; j += increment)
                     {
                         double thisDeltaV = LambertSolver.TransferDeltaV(originOrbit, destOrbit, i, j);
 
@@ -307,7 +334,18 @@ namespace TourismExpanded
 
                 double minDeltaV = LambertSolver.TransferDeltaV(originOrbit, destOrbit, launchTime, travelTime);
 
-                for (double i = travelTime / 2; i < travelTime * 2; i += 60 * 60 * 6)
+                double increment;
+
+                if (originOrbit.semiMajorAxis < destOrbit.semiMajorAxis)
+                {
+                    increment = originOrbit.period / 180;
+                }
+                else
+                {
+                    increment = destOrbit.period / 180;
+                }
+
+                for (double i = travelTime / 2; i < travelTime * 2; i += increment)
                 {
                     double thisDeltaV = LambertSolver.TransferDeltaV(originOrbit, destOrbit, launchTime, i);
 
@@ -317,11 +355,11 @@ namespace TourismExpanded
                     }
                 }
 
-                for (double i = earliestLaunchDate; i < launchTime; i += 60 * 60 * 6 * 2)
+                for (double i = earliestLaunchDate; i < launchTime; i += increment)
                 {
                     double deltaV = minDeltaV * 1.1;
 
-                    for (double j = travelTime / 2; j < travelTime * 2; j += 60 * 60 * 6 * 2)
+                    for (double j = travelTime / 2; j < travelTime * 2; j += increment)
                     {
                         double thisDeltaV = LambertSolver.TransferDeltaV(originOrbit, destOrbit, i, j);
 
@@ -352,7 +390,7 @@ namespace TourismExpanded
             }
 
             MonoBehaviour.print("The travel time between " + origin.name + " and " + dest.name + " = " + KSPUtil.dateTimeFormatter.PrintTimeStamp(totalTravelTime, days: true, years: true)
-                + " Launching at : " + KSPUtil.dateTimeFormatter.PrintTimeStamp(launchTime, days: true, years: true));
+                + "\n Launching at : " + KSPUtil.dateTimeFormatter.PrintTimeStamp(launchTime, days: true, years: true));
 
             return totalTravelTime + launchTime;
         }
@@ -377,7 +415,18 @@ namespace TourismExpanded
 
                 double minDeltaV = LambertSolver.TransferDeltaV(originOrbit, destOrbit, launchTime, travelTime);
 
-                for (double i = travelTime / 2; i < travelTime * 2; i += 60 * 60 * 6)
+                double increment;
+
+                if (originOrbit.semiMajorAxis < destOrbit.semiMajorAxis)
+                {
+                    increment = originOrbit.period / 180;
+                }
+                else
+                {
+                    increment = destOrbit.period / 180;
+                }
+
+                for (double i = travelTime / 2; i < travelTime * 2; i += increment)
                 {
                     double thisDeltaV = LambertSolver.TransferDeltaV(originOrbit, destOrbit, launchTime, i);
 
@@ -387,11 +436,11 @@ namespace TourismExpanded
                     }
                 }
 
-                for (double i = earliestLaunchDate; i < launchTime; i += 60 * 60 * 6 * 2)
+                for (double i = earliestLaunchDate; i < launchTime; i += increment)
                 {
                     double deltaV = minDeltaV * 1.1;
 
-                    for (double j = travelTime / 2; j < travelTime * 2; j += 60 * 60 * 6 * 2)
+                    for (double j = travelTime / 2; j < travelTime * 2; j += increment)
                     {
                         double thisDeltaV = LambertSolver.TransferDeltaV(originOrbit, destOrbit, i, j);
 
@@ -431,7 +480,18 @@ namespace TourismExpanded
 
                 double minDeltaV = LambertSolver.TransferDeltaV(originOrbit, destOrbit, launchTime, travelTime);
 
-                for (double i = travelTime / 2; i < travelTime * 2; i += 60 * 60 * 6)
+                double increment;
+
+                if (originOrbit.semiMajorAxis < destOrbit.semiMajorAxis)
+                {
+                    increment = originOrbit.period / 180;
+                }
+                else
+                {
+                    increment = destOrbit.period / 180;
+                }
+
+                for (double i = travelTime / 2; i < travelTime * 2; i += increment)
                 {
                     double thisDeltaV = LambertSolver.TransferDeltaV(originOrbit, destOrbit, launchTime, i);
 
@@ -441,11 +501,11 @@ namespace TourismExpanded
                     }
                 }
 
-                for (double i = earliestLaunchDate; i < launchTime; i += 60 * 60 * 6 * 2)
+                for (double i = earliestLaunchDate; i < launchTime; i += increment)
                 {
                     double deltaV = minDeltaV * 1.1;
 
-                    for (double j = travelTime / 2; j < travelTime * 2; j += 60 * 60 * 6 * 2)
+                    for (double j = travelTime / 2; j < travelTime * 2; j += increment)
                     {
                         double thisDeltaV = LambertSolver.TransferDeltaV(originOrbit, destOrbit, i, j);
 
@@ -476,7 +536,7 @@ namespace TourismExpanded
             }
 
             MonoBehaviour.print("The travel time between " + origin.name + " and " + dest.name + " = " + KSPUtil.dateTimeFormatter.PrintTimeStamp(totalTravelTime, days: true, years: true)
-                + " Launching at : " + KSPUtil.dateTimeFormatter.PrintTimeStamp(launchTime, days: true, years: true));
+                + "\n Launching at : " + KSPUtil.dateTimeFormatter.PrintTimeStamp(launchTime, days: true, years: true));
 
             return totalTravelTime + launchTime;
         }
@@ -622,7 +682,18 @@ namespace TourismExpanded
                 double minDeltaV = LambertSolver.TransferDeltaV(origin, dest.orbit, launchTime, travelTime, origin.scienceValues.spaceAltitudeThreshold + 10000);
                 double minDeltaVTravelTime = travelTime;
 
-                for (double i = travelTime / 2; i < travelTime * 2; i += 60 * 60 * 6)
+                double increment;
+
+                if (originOrbit.semiMajorAxis < destOrbit.semiMajorAxis)
+                {
+                    increment = originOrbit.period / 180;
+                }
+                else
+                {
+                    increment = destOrbit.period / 180;
+                }
+
+                for (double i = travelTime / 2; i < travelTime * 2; i += increment)
                 {
                     double thisDeltaV = LambertSolver.TransferDeltaV(origin, dest.orbit, launchTime, i, origin.scienceValues.spaceAltitudeThreshold + 10000);
 
@@ -644,7 +715,8 @@ namespace TourismExpanded
                 throw new Exception("Cannot find delta V betweem " + origin.name + " and " + dest.name);
             }
 
-            MonoBehaviour.print("Delta V to transfer between " + origin.name + " and " + dest.name + " = " + deltaV +  " at " + KSPUtil.dateTimeFormatter.PrintTimeStamp(launchTime, days: true, years: true));
+            MonoBehaviour.print("Delta V to transfer between " + origin.name + " and " + dest.name + " = " + deltaV +  ""
+                + "\n Launching at " + KSPUtil.dateTimeFormatter.PrintTimeStamp(launchTime, days: true, years: true));
 
             return deltaV;
         }
@@ -669,7 +741,18 @@ namespace TourismExpanded
                 double minDeltaV = LambertSolver.TransferDeltaV(origin, dest, launchTime, travelTime, origin.scienceValues.spaceAltitudeThreshold + 10000, dest.scienceValues.spaceAltitudeThreshold + 10000);
                 double minDeltaVTravelTime = travelTime;
 
-                for(double i = travelTime / 2; i < travelTime * 2; i += 60 * 60 * 6)
+                double increment;
+
+                if (originOrbit.semiMajorAxis < destOrbit.semiMajorAxis)
+                {
+                    increment = originOrbit.period / 180;
+                }
+                else
+                {
+                    increment = destOrbit.period / 180;
+                }
+
+                for (double i = travelTime / 2; i < travelTime * 2; i += increment)
                 {
                     double thisDeltaV = LambertSolver.TransferDeltaV(origin, dest, launchTime, i, origin.scienceValues.spaceAltitudeThreshold + 10000, dest.scienceValues.spaceAltitudeThreshold + 10000);
 
@@ -707,7 +790,8 @@ namespace TourismExpanded
                 throw new Exception("Cannot find delta V betweem " + origin.name + " and " + dest.name);
             }
 
-            MonoBehaviour.print("Delta V to transfer between " + origin.name + " and " + dest.name + " = " + deltaV + " at " + KSPUtil.dateTimeFormatter.PrintTimeStamp(launchTime, days: true, years: true));
+            MonoBehaviour.print("Delta V to transfer between " + origin.name + " and " + dest.name + " = " + deltaV 
+                + "\n Launching at " + KSPUtil.dateTimeFormatter.PrintTimeStamp(launchTime, days: true, years: true));
 
             return deltaV;
         }
