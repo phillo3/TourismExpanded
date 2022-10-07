@@ -1,0 +1,9 @@
+Tourism Expanded 1.0.2
+-Significant performance improvements
+-Other minor tweaks
+
+Tourism Expanded 1.0.1
+- Fixed some bugs
+
+TourismExpanded 1.0.0
+-Initial release
