@@ -11,6 +11,7 @@ using FinePrint;
 using Contracts;
 using ContractConfigurator;
 using ContractConfigurator.CutScene;
+using System.Security.Cryptography;
 
 namespace TourismExpanded
 {
@@ -87,7 +88,6 @@ namespace TourismExpanded
             CelestialBody sun = homePlanet.orbit.referenceBody;
             CelestialBody destPlanet = contract.targetBody;
 
-
             if (targetVessel != null)
             {
                 double arrivalTime = Planetarium.GetUniversalTime();
@@ -98,7 +98,31 @@ namespace TourismExpanded
 
                 contract.TimeDeadline = (arrivalTime - Planetarium.GetUniversalTime()) * multiplier;
             }
-            else if (!multipleDest)
+            else if (multipleDest)
+            {
+                double arrivalTime = Planetarium.GetUniversalTime();
+
+                CelestialBody lastBody = homePlanet;
+                HashSet<CelestialBody> bodies = contract.ContractBodies;
+
+                bodies.Remove(homePlanet);
+                bodies.Remove(sun);
+
+                foreach (CelestialBody body in bodies.OrderBy(b => (b.referenceBody == sun || b.referenceBody == homePlanet)? b.orbit.semiMajorAxis : b.referenceBody.orbit.semiMajorAxis))
+                {
+                    arrivalTime = TravelTime(lastBody, body, arrivalTime) + delay;
+                    lastBody = body;
+                }
+
+                arrivalTime = TravelTime(lastBody, homePlanet, arrivalTime);
+
+                contract.TimeDeadline = (arrivalTime - Planetarium.GetUniversalTime()) * multiplier;
+            }
+            else if(destPlanet == sun)
+            {
+                contract.TimeDeadline = TravelTime(sun, homePlanet.orbit.semiMajorAxis, sun.Radius * 2) * 4;//temp fix
+            }
+            else
             {
                 if (!destPlanet.isHomeWorld)
                 {
@@ -114,24 +138,6 @@ namespace TourismExpanded
                 {
                     contract.TimeDeadline = delay;
                 }
-            }
-            else
-            {
-                double arrivalTime = Planetarium.GetUniversalTime();
-
-                CelestialBody lastBody = homePlanet;
-                foreach (CelestialBody body in contract.ContractBodies)
-                {
-                    if (!body.isHomeWorld)
-                    {
-                        arrivalTime = TravelTime(lastBody, body, arrivalTime) + delay;
-                    }
-                    lastBody = body;
-                }
-
-                arrivalTime = TravelTime(lastBody, homePlanet, arrivalTime);
-
-                contract.TimeDeadline = (arrivalTime - Planetarium.GetUniversalTime()) * multiplier;
             }
         }
 
@@ -211,6 +217,10 @@ namespace TourismExpanded
             else if (origin.referenceBody.referenceBody == dest.referenceBody)
             {
                 totalTravelTime = TravelTime(origin.referenceBody, dest, earliestLaunchDate);
+            }
+            else if (origin.referenceBody.referenceBody == dest.referenceBody.referenceBody)
+            {
+                totalTravelTime = TravelTime(origin.referenceBody, dest.referenceBody, earliestLaunchDate);
             }
             else
             {
@@ -533,7 +543,31 @@ namespace TourismExpanded
             {
                 totalDeltaV += TransferDeltaV(homePlanet, targetVessel) * 2;
             }
-            else if (!multipleDest)
+            else if (multipleDest)
+            {
+                CelestialBody lastBody = homePlanet;
+                HashSet<CelestialBody> bodies = contract.ContractBodies;
+
+                bodies.Remove(homePlanet);
+                bodies.Remove(sun);
+
+                foreach (CelestialBody body in bodies.OrderBy(b => (b.referenceBody == sun || b.referenceBody == homePlanet) ? b.orbit.semiMajorAxis : b.referenceBody.orbit.semiMajorAxis))
+                {
+                    totalDeltaV += TransferDeltaV(lastBody, body);
+                    if (landing && body.hasSolidSurface)
+                    {
+                        totalDeltaV += EscapeVelocity(body) * 2;
+                    }
+                    lastBody = body;
+                }
+
+                totalDeltaV += TransferDeltaV(lastBody, homePlanet);
+            }
+            else if (destBody == sun)
+            {
+                totalDeltaV += TransferDeltaV(sun, homePlanet.orbit.semiMajorAxis, sun.Radius * 2);
+            }
+            else
             {
                 if (!destBody.isHomeWorld)
                 {
@@ -548,23 +582,6 @@ namespace TourismExpanded
                 else
                 {
                 }
-            }
-            else
-            {
-                CelestialBody lastBody = homePlanet;
-                foreach (CelestialBody body in contract.ContractBodies)
-                {
-                    if(!body.isHomeWorld)
-                    {
-                        totalDeltaV += TransferDeltaV(lastBody, body);
-                        if(landing)
-                        {
-                            totalDeltaV += EscapeVelocity(body) * 2;
-                        }
-                    }
-                    lastBody = body;
-                }
-                totalDeltaV += TransferDeltaV(lastBody, homePlanet);
             }
 
             MonoBehaviour.print("Total delta v for " + contract.Title + " is " + totalDeltaV);
@@ -680,6 +697,10 @@ namespace TourismExpanded
             else if(origin.referenceBody.referenceBody == dest.referenceBody)
             {
                 deltaV = TransferDeltaV(origin.referenceBody, dest);
+            }
+            else if (origin.referenceBody.referenceBody == dest.referenceBody.referenceBody)
+            {
+                deltaV = TransferDeltaV(origin.referenceBody, dest.referenceBody);
             }
             else
             {
